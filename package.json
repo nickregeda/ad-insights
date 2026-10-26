@@ -1,5 +1,5 @@
 {
-  "name": "@org/source",
+  "name": "@ad-insights/source",
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {},
@@ -17,7 +17,8 @@
     "typescript": "~6.0.3"
   },
   "workspaces": [
-    "packages/*"
+    "apps/*",
+    "libs/*"
   ],
   "packageManager": "npm@10.9.8"
 }
