@@ -46,3 +46,5 @@ Thumbs.db
 .nx/polygraph
 .nx/self-healing
 .nx/migrate-runs
+# Personal Claude Code instructions
+CLAUDE.local.md
