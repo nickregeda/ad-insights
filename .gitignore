@@ -50,3 +50,4 @@ Thumbs.db
 CLAUDE.local.md
 vitest.config.*.timestamp*
 .vitest
+docs/interview-notes.md
