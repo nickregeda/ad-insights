@@ -48,3 +48,5 @@ Thumbs.db
 .nx/migrate-runs
 # Personal Claude Code instructions
 CLAUDE.local.md
+vitest.config.*.timestamp*
+.vitest
