@@ -1,109 +1,77 @@
-# New Nx Repository
+# Ad Insights
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+A Chrome extension (Manifest V3) that detects ads on the pages you visit, plus a backend that collects the events and a dashboard that shows which ad networks appear on which sites and how often.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+Think of it as a tiny version of an ad intelligence panel: the extension acts as a "panel user" that reports ad placements, and the backend turns those reports into statistics.
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/docs/technologies/typescript/introduction?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+> **Status:** early development. The monorepo skeleton is ready; the extension MVP is next. See the [roadmap](#roadmap).
 
-🚀 If you haven't connected to Nx Cloud yet, [complete your setup here](https://cloud.nx.app/get-started). Get faster builds with remote caching, distributed task execution, and self-healing CI. [See how your workspace can benefit](#nx-cloud).
+## Architecture
 
-## Generate a library
+```
+[Chrome extension, MV3]
+  content script  - finds ad slots in the DOM
+  service worker  - collects events, sends them in batches
+  popup (Angular) - stats for the current page
+        |  HTTPS, JWT
+        v
+[API: NestJS] -- publishes events --> [RabbitMQ] --> [Worker: Node.js]
+        |                                                 |
+        |<------------- Redis (aggregates, cache) <-------+
+        |                                                 v
+        |                                           [Database]
+        v
+[BFF: Express 5] <-- WebSocket -- [Dashboard: Angular, zoneless]
+        |
+        +-- LLM API: AI summary of ad activity
+```
+
+Only the skeleton and the shared library exist today; the rest is planned.
+
+## Tech stack
+
+| Area                | Technologies                                                     |
+| ------------------- | ---------------------------------------------------------------- |
+| Monorepo            | NX 24, npm workspaces, TypeScript (strict)                       |
+| Code quality        | ESLint 9 (flat config), Prettier, Husky, lint-staged, commitlint |
+| Tests               | Vitest                                                           |
+| Extension (planned) | Manifest V3, TypeScript, Angular popup                           |
+| Backend (planned)   | NestJS, Express 5, RabbitMQ, Redis, SQL/NoSQL database           |
+| Dashboard (planned) | Angular (standalone, signals, zoneless)                          |
+
+## Project structure
+
+```
+apps/          applications (extension, api, bff, worker, dashboard)
+libs/shared/   types and event contracts shared by frontend and backend
+```
+
+## Getting started
+
+Requirements: Node.js 22 LTS, npm.
 
 ```sh
-npx nx g @nx/js:lib packages/pkg1 --publishable --importPath=@my-org/pkg1
+npm install                      # also installs git hooks via Husky
+npx nx show projects             # list projects
+npx nx test shared               # run tests for one project
+npx nx run-many -t lint test     # lint and test everything
+npx nx graph                     # explore the project graph
 ```
 
-## Run tasks
+## Conventions
 
-To build the library use:
+- Commits follow [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `chore:`, ...), enforced by commitlint.
+- A pre-commit hook runs ESLint (warnings fail the commit) and Prettier on staged files.
+- All text files use LF line endings (`.gitattributes`).
 
-```sh
-npx nx run pkg1:build
-```
+## Roadmap
 
-To run any task with Nx use:
-
-```sh
-npx nx run <project-name>:<target>
-```
-
-These targets are either [inferred automatically](https://nx.dev/docs/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
-
-[More about running tasks in the docs &raquo;](https://nx.dev/docs/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Versioning and releasing
-
-To version and release the library use
-
-```
-npx nx release
-```
-
-Pass `--dry-run` to see what would happen without actually releasing the library.
-
-[Learn more about Nx release &raquo;](https://nx.dev/docs/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Keep TypeScript project references up to date
-
-Nx automatically updates TypeScript [project references](https://www.typescriptlang.org/docs/handbook/project-references.html) in `tsconfig.json` files to ensure they remain accurate based on your project dependencies (`import` or `require` statements). This sync is automatically done when running tasks such as `build` or `typecheck`, which require updated references to function correctly.
-
-To manually trigger the process to sync the project graph dependencies information to the TypeScript project references, run the following command:
-
-```sh
-npx nx sync
-```
-
-You can enforce that the TypeScript project references are always in the correct state when running in CI by adding a step to your CI job configuration that runs the following command:
-
-```sh
-npx nx sync:check
-```
-
-[Learn more about nx sync](https://nx.dev/reference/nx-commands#sync)
-
-## Nx Cloud
-
-Nx Cloud ensures a [fast and scalable CI](https://nx.dev/nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
-
-- [Remote caching](https://nx.dev/docs/features/ci-features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/docs/features/ci-features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/docs/features/ci-features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/docs/features/ci-features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-### Set up CI (non-Github Actions CI)
-
-**Note:** This is only required if your CI provider is not GitHub Actions.
-
-Use the following command to configure a CI workflow for your workspace:
-
-```sh
-npx nx g ci-workflow
-```
-
-[Learn more about Nx on CI](https://nx.dev/docs/features/ci-features?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/docs/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## 🔗 Learn More
-
-- [Nx Documentation](https://nx.dev/docs)
-- [Crafting Your Workspace Tutorial](https://nx.dev/docs/getting-started/tutorials/crafting-your-workspace)
-- [Module Boundaries](https://nx.dev/docs/features/enforce-module-boundaries)
-- [Releasing Packages](https://nx.dev/docs/features/manage-releases)
-- [Nx Plugins](https://nx.dev/docs/concepts/nx-plugins)
-- [Nx Cloud](https://nx.dev/nx-cloud)
-
-## 💬 Community
-
-Join the Nx community:
-
-- [Discord](https://go.nx.dev/community)
-- [X (Twitter)](https://twitter.com/nxdevtools)
-- [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [YouTube](https://www.youtube.com/@nxdevtools)
-- [Blog](https://nx.dev/blog)
+- [x] Monorepo skeleton: NX, strict TypeScript, ESLint, Prettier, Vitest, git hooks
+- [ ] Extension MVP: ad detection, service worker, Angular popup
+- [ ] API (NestJS) and BFF (Express 5), Docker Compose
+- [ ] Event queue with RabbitMQ, worker, Redis aggregates
+- [ ] Sign-in with Google (OAuth 2.0 / OpenID Connect), JWT with refresh tokens
+- [ ] Dashboard: live updates over WebSocket, charts, i18n
+- [ ] AI summary via LLM API with structured output
+- [ ] Docker, CI/CD, deployment to a Linux VPS
+- [ ] E2E tests with Playwright
