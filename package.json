@@ -2,7 +2,9 @@
   "name": "@ad-insights/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "prepare": "husky"
+  },
   "private": true,
   "devDependencies": {
     "@eslint/js": "^9.8.0",
@@ -17,6 +19,8 @@
     "@vitest/coverage-v8": "~5.0.1",
     "eslint": "^9.8.0",
     "eslint-config-prettier": "^10.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
     "nx": "24.0.0",
     "prettier": "^3.8.1",
     "tslib": "^2.3.0",
@@ -29,6 +33,5 @@
     "apps/*",
     "libs/*"
   ],
-  "packageManager": "npm@10.9.8",
-  "dependencies": {}
+  "packageManager": "npm@10.9.8"
 }
